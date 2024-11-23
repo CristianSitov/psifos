@@ -37,12 +37,10 @@ class VotingHours extends Command
             $data = collect($response->json())->sortBy('key');
 
             foreach ($data as $item) {
-                if ($item['key'] !== 'now') {
-                    VotingHour::updateOrCreate(
-                        ['key' => $item['key']], // Match based on a unique column
-                        $item // Fillable attributes
-                    );
-                }
+                VotingHour::updateOrCreate(
+                    ['key' => $item['key']], // Match based on a unique column
+                    $item // Fillable attributes
+                );
             }
 
             $this->info('Data successfully saved to the database.');

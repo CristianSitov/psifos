@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('voting_hours', function (Blueprint $table) {
+        Schema::create('voting_counties', function (Blueprint $table) {
             $table->id();
+            $table->string('code');
             $table->string('name');
-            $table->string('key');
-            $table->string('timestamp')->nullable();
-            $table->tinyInteger('is_done')->default(0);
+            $table->string('nce');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('voting_hours');
+        Schema::dropIfExists('voting_counties');
     }
 };
