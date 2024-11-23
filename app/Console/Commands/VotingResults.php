@@ -7,6 +7,7 @@ use App\Models\VotingHour;
 use App\Models\VotingResult;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Random\RandomException;
 
 class VotingResults extends Command
 {
@@ -26,13 +27,16 @@ class VotingResults extends Command
 
     /**
      * Execute the console command.
+     * @throws RandomException
      */
-    public function handle()
+    public function handle(): void
     {
         $ct = time();
         $hours = VotingHour::all();
 
         foreach ($hours as $hour) {
+            sleep(random_int(1, 10));
+
             $ts = $hour->key;
             $baseUrl = "https://prezenta.roaep.ro/prezidentiale24112024/data/json/simpv/presence/presence_{$ts}.json?_={$ct}";
 
@@ -64,10 +68,16 @@ class VotingResults extends Command
                             $ageRanges,
                         );
 
-                        VotingResult::updateOrCreate($insertableValues);
+                        VotingResult::updateOrCreate(
+                            ['county_id' => $countyData['id'], 'key' => $ts],
+                            $insertableValues
+                        );
                     }
 
-                    $hour->update(['is_done' => 1]);
+                    if ($hour->key !== 'now') {
+                        $hour->is_done = 1;
+                        $hour->save();
+                    }
                 }
             }
         }

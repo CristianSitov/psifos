@@ -34,7 +34,7 @@ class VotingHours extends Command
         $response = Http::get($url);
 
         if ($response->ok()) {
-            $data = collect($response->json())->sortBy('key');
+            $data = $response->json();
 
             foreach ($data as $item) {
                 VotingHour::updateOrCreate(
