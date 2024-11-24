@@ -1,7 +1,3 @@
+import '../sass/tabler.scss';
 import './bootstrap';
-
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
+import './tabler-init';
