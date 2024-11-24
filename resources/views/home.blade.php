@@ -28,7 +28,8 @@
                         </div>
 
                         <div class="card-body">
-                            <div id="container" style="min-height: 600px"></div>
+                            <div id="container-comparison-gross"></div>
+                            <div id="container-comparison-share"></div>
                         </div>
                     </div>
                 </div>
@@ -48,14 +49,15 @@ function fetchData() {
             const categories = data.map(item => item.the_key);
             const presence2019 = data.map(item => item.the_presence_2019);
             const presence2024 = data.map(item => item.the_presence_2024);
+            const presence2019Share = data.map(item => item.the_presence_2019_percent);
+            const presence2024Share = data.map(item => item.the_presence_2024_percent);
 
-            // Create the Highcharts area plot
-            Highcharts.chart('container', {
+            Highcharts.chart('container-comparison-gross', {
                 chart: {
-                    type: 'area'
+                    type: 'column'
                 },
                 title: {
-                    text: 'Presence Comparison Over Years'
+                    text: 'Presence Comparison Over Years - Gross'
                 },
                 xAxis: {
                     categories: categories,
@@ -77,7 +79,39 @@ function fetchData() {
                     {
                         name: 'Presence 2024',
                         data: presence2024,
-                        color: 'rgba(67, 67, 72, 0.8)' // Optional: custom color
+                        color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
+                    }
+                ]
+            });
+
+            Highcharts.chart('container-comparison-share', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Presence Comparison Over Years - Share'
+                },
+                xAxis: {
+                    categories: categories,
+                    title: {
+                        text: 'Categories'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Presence'
+                    }
+                },
+                series: [
+                    {
+                        name: 'Presence 2019',
+                        data: presence2019Share,
+                        color: 'rgba(124, 181, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2024',
+                        data: presence2024Share,
+                        color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
                     }
                 ]
             });

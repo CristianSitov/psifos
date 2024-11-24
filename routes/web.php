@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Route;
 Auth::routes();
 
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+Route::get('/', function () {
+    return view('welcome');
+});
 
-Route::get('/', [HomeController::class, 'index'])
-    ->name('voteaza');
+Route::get('/alegeri2024/turul-1', [HomeController::class, 'index'])
+    ->name('alegeri2024.turul-1');
 
 Route::get('/status.json', [HomeController::class, 'status']);
 
