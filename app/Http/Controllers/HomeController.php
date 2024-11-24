@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Console\Commands\VotingResults;
+use App\Models\VotingFinal;
 use App\Models\VotingResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,13 @@ class HomeController extends Controller
                 return in_array($item->the_hour, ['now', 'not']);
             });
 
-        return response()->json($processedResults);
+        $finals = VotingFinal::query()
+            ->orderBy('votes', 'DESC')
+            ->get();
+
+        return response()->json([
+            'presence' => $processedResults,
+            'finals' => $finals,
+        ]);
     }
 }

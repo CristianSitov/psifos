@@ -28,6 +28,7 @@
                         </div>
 
                         <div class="card-body">
+                            <div id="container-comparison-final" style="min-height: 600px"></div>
                             <div id="container-comparison-gross"></div>
                             <div id="container-comparison-share"></div>
                         </div>
@@ -46,11 +47,13 @@ function fetchData() {
     fetch(jsonUrl)
         .then(response => response.json())
         .then(data => {
-            const categories = data.map(item => item.the_key);
-            const presence2019 = data.map(item => item.the_presence_2019);
-            const presence2024 = data.map(item => item.the_presence_2024);
-            const presence2019Share = data.map(item => item.the_presence_2019_percent);
-            const presence2024Share = data.map(item => item.the_presence_2024_percent);
+            const categories = data.presence.map(item => item.the_key);
+            const presence2019 = data.presence.map(item => item.the_presence_2019);
+            const presence2024 = data.presence.map(item => item.the_presence_2024);
+            const presence2019Share = data.presence.map(item => item.the_presence_2019_percent);
+            const presence2024Share = data.presence.map(item => item.the_presence_2024_percent);
+            const candidates = data.finals.map(item => item.candidate);
+            const finals2024 = data.finals.map(item => item.votes);
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
@@ -112,6 +115,52 @@ function fetchData() {
                         name: 'Presence 2024',
                         data: presence2024Share,
                         color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
+                    }
+                ]
+            });
+
+            Highcharts.chart('container-comparison-final', {
+                chart: {
+                    type: 'column',
+                    options3d: {
+                        enabled: true,
+                        alpha: 15,
+                        beta: 15,
+                        viewDistance: 25,
+                        depth: 40
+                    }
+                },
+                title: {
+                    text: 'Finals 2024'
+                },
+                xAxis: {
+                    categories: candidates,
+                    title: {
+                        text: 'Categories'
+                    },
+                    labels: {
+                        skew3d: true,
+                        style: {
+                            fontSize: '16px'
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Distribution'
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal',
+                        depth: 40
+                    }
+                },
+                series: [
+                    {
+                        name: 'Finals 2024',
+                        data: finals2024,
+                        color: 'rgba(30, 50, 236, 0.8)'
                     }
                 ]
             });

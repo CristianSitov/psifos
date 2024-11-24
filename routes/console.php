@@ -13,3 +13,5 @@ use Illuminate\Support\Facades\Schedule;
 //    ->everyFiveMinutes()
 //    ->between('23:00', '6:00')
 //    ->timezone('Europe/Bucharest');
+Schedule::command('app:fetch:finals')
+    ->everyMinute();
