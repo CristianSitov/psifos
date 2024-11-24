@@ -10,6 +10,7 @@ class VotingResult extends Model
 
     protected $fillable = [
         "key",
+        "year",
         "county_id",
         "initial_count_lp",
         "initial_count_lc",

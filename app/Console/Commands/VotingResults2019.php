@@ -9,14 +9,14 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Random\RandomException;
 
-class VotingResults extends Command
+class VotingResults2019 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:fetch:results';
+    protected $signature = 'app:fetch:results:2019';
 
     /**
      * The console command description.
@@ -33,7 +33,7 @@ class VotingResults extends Command
     {
         $ct = time();
         $hours = VotingHour::query()
-            ->where('year', '=', 2024)
+            ->where('year', '=', 2019)
             ->where('is_done', 0)
             ->get();
 
@@ -41,7 +41,7 @@ class VotingResults extends Command
             sleep(random_int(1, 10));
 
             $ts = $hour->key;
-            $baseUrl = "https://prezenta.roaep.ro/prezidentiale24112024/data/json/simpv/presence/presence_{$ts}.json?_={$ct}";
+            $baseUrl = "https://prezenta.roaep.ro/prezidentiale10112019/data/presence/json/presence_AB_{$ts}.json?_={$ct}";
 
             if ($hour->is_done === 0) {
                 $this->info("Fetching data from the AEP for {$ts}...");
@@ -56,24 +56,18 @@ class VotingResults extends Command
                     foreach ($countiesResults as $countyResults) {
                         $countyCollection = collect($countyResults);
 
-                        $countyData = $countyCollection->pull('county');
-                        VotingCounty::updateOrCreate(
-                            ['id' => $countyData['id']], // Match based on a unique column
-                            $countyData // Fillable attributes
-                        );
-
                         $ageRanges = $countyCollection->pull('age_ranges');
 
                         $insertableValues = $countyCollection->toArray();
                         $insertableValues = array_merge(
-                            ['year' => 2024],
+                            ['year' => 2019],
                             ['key' => $ts],
                             $insertableValues,
                             $ageRanges,
                         );
 
                         VotingResult::updateOrCreate(
-                            ['county_id' => $countyData['id'], 'key' => $ts, 'year' => 2024],
+                            ['county_id' => $countyCollection['id_county'], 'key' => $ts, 'year' => 2019],
                             $insertableValues
                         );
                     }
