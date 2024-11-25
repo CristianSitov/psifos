@@ -62,7 +62,7 @@ function fetchData() {
             }));
             const totalVotes = data.totals.total;
             const finalVotes = data.totals.final;
-            const eraseVotes = 216_797;
+            const eraseVotes = 222_581;
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
