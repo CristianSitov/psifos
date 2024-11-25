@@ -53,7 +53,11 @@ function fetchData() {
             const presence2019Share = data.presence.map(item => item.the_presence_2019_percent);
             const presence2024Share = data.presence.map(item => item.the_presence_2024_percent);
             const candidates = data.finals.map(item => item.candidate);
-            const finals2024 = data.finals.map(item => item.votes);
+            const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
+            const finals2024 = data.finals.map(item => ({
+                y: item.votes,
+                percentage: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
+            }));
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
@@ -121,14 +125,7 @@ function fetchData() {
 
             Highcharts.chart('container-comparison-final', {
                 chart: {
-                    type: 'column',
-                    options3d: {
-                        enabled: true,
-                        alpha: 15,
-                        beta: 15,
-                        viewDistance: 25,
-                        depth: 40
-                    }
+                    type: 'bar'
                 },
                 title: {
                     text: 'Finals 2024'
@@ -151,16 +148,36 @@ function fetchData() {
                     }
                 },
                 plotOptions: {
-                    column: {
-                        stacking: 'normal',
-                        depth: 40
+                    series: {
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+                                return `${humanSize(this.point.y)} // ${this.point.percentage}%`; // Display percentage as data label
+                            }
+                        }
                     }
                 },
                 series: [
                     {
                         name: 'Finals 2024',
                         data: finals2024,
-                        color: 'rgba(30, 50, 236, 0.8)'
+                        colorByPoint: true,
+                        colors: [
+                            "rgb(123, 45, 67)",
+                            "rgb(255, 0, 100)",
+                            "rgb(34, 123, 230)",
+                            "rgb(210, 178, 99)",
+                            "rgb(75, 200, 180)",
+                            "rgb(10, 90, 220)",
+                            "rgb(255, 123, 50)",
+                            "rgb(140, 70, 90)",
+                            "rgb(180, 255, 60)",
+                            "rgb(90, 40, 250)",
+                            "rgb(200, 80, 120)",
+                            "rgb(30, 200, 80)",
+                            "rgb(190, 255, 220)",
+                            "rgb(100, 10, 190)"
+                        ]
                     }
                 ]
             });
@@ -171,6 +188,13 @@ function fetchData() {
 // Fetch immediately and then every minute
 fetchData(); // Initial fetch
 setInterval(fetchData, 60000); // Fetch every 60000ms (1 minute)
+
+function humanSize(size) {
+    let base = 1000
+    let units = ['', 'K', 'M', 'G', 'T']
+    let i = Math.log(size) / Math.log(base) | 0
+    return `${(size / Math.pow(base, i)).toFixed(3) * 1} ${units[i]}`
+}
 
 </script>
 @endsection
