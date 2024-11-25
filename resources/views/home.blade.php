@@ -28,6 +28,7 @@
                         </div>
 
                         <div class="card-body">
+                            <div id="container-comparison-count"></div>
                             <div id="container-comparison-final" style="min-height: 600px"></div>
                             <div id="container-comparison-gross"></div>
                             <div id="container-comparison-share"></div>
@@ -58,6 +59,8 @@ function fetchData() {
                 y: item.votes,
                 percentage: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
             }));
+            const totalVotes = data.totals.total;
+            const finalVotes = data.totals.final;
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
@@ -180,6 +183,54 @@ function fetchData() {
                         ]
                     }
                 ]
+            });
+
+            Highcharts.chart('container-comparison-count', {
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Votes Count Progress'
+                },
+                xAxis: {
+                    categories: ['Votes'], // Single category for the single bar
+                    title: {
+                        text: null
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    max: totalVotes,
+                    title: {
+                        text: 'Number of Votes'
+                    }
+                },
+                tooltip: {
+                    formatter: function () {
+                        return `<b>${this.series.name}</b>: ${this.y}<br>
+                            Percentage: ${(this.y / totalVotes * 100).toFixed(2)}%`;
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        stacking: 'normal', // Stacked bar to show progress
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+                                return `${((this.y / totalVotes) * 100).toFixed(2)}%`; // Show percentage
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Counted Votes',
+                    data: [finalVotes],
+                    color: '#7cb5ec' // Custom color for counted votes
+                }, {
+                    name: 'Remaining Votes',
+                    data: [totalVotes - finalVotes],
+                    color: '#90ed7d' // Custom color for remaining votes
+                }]
             });
         })
         .catch(error => console.error('Error fetching the JSON data:', error));

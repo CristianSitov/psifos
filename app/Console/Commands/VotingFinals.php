@@ -45,12 +45,16 @@ class VotingFinals extends Command
         if ($response->ok()) {
             $data = collect($response->json());
 
-            $results = collect($data['scopes']['CNTRY']['PRSD']['RO']['candidates']);
+            $resultsA = collect($data['scopes']['CNTRY']['PRSD']['RO']['candidates']);
+            $resultsB = collect($data['scopes']['CNTRY']['PRSD_C']['RO']['candidates']);
 
-            foreach ($results as $result) {
+            foreach ($resultsA as $k => $result) {
                 VotingFinal::updateOrCreate(
                     ['candidate' => $result['candidate']],
-                    $result
+                    [
+                        'candidate' => $result['candidate'],
+                        'votes' => $resultsA[$k]['votes'] + $resultsB[$k]['votes'],
+                    ]
                 );
             }
         }

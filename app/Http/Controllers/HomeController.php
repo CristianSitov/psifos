@@ -86,9 +86,19 @@ class HomeController extends Controller
             ->orderBy('votes', 'DESC')
             ->get();
 
+        $totalSum = VotingResult::query()
+            ->where('year', '=', 2024)
+            ->where('key', '=', 'now')
+            ->sum('LT');
+        $finalSum = VotingFinal::sum('votes');
+
         return response()->json([
             'presence' => $processedResults,
             'finals' => $finals,
+            'totals' => [
+                'total' => (int) $totalSum,
+                'final' => (int) $finalSum,
+            ],
         ]);
     }
 }
