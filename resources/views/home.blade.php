@@ -62,6 +62,7 @@ function fetchData() {
             }));
             const totalVotes = data.totals.total;
             const finalVotes = data.totals.final;
+            const eraseVotes = 216_797;
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
@@ -234,8 +235,12 @@ function fetchData() {
                     data: [finalVotes],
                     color: '#7cb5ec' // Custom color for counted votes
                 }, {
+                    name: 'Canceled Votes',
+                    data: [eraseVotes],
+                    color: '#ac1155' // Custom color for remaining votes
+                }, {
                     name: 'Remaining Votes',
-                    data: [totalVotes - finalVotes],
+                    data: [totalVotes - finalVotes - eraseVotes],
                     color: '#90ed7d' // Custom color for remaining votes
                 }]
             });
