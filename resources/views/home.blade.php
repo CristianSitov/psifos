@@ -137,12 +137,17 @@ function fetchData() {
                 xAxis: {
                     categories: candidates,
                     title: {
-                        text: 'Categories'
+                        text: 'Candidates',
+                        style: {
+                            fontSize: '20px'
+                        }
                     },
                     labels: {
                         skew3d: true,
                         style: {
-                            fontSize: '16px'
+                            fontSize: '10px',
+                            textOverflow: 'ellipsis',
+                            width: '100px',
                         }
                     }
                 },
@@ -158,8 +163,9 @@ function fetchData() {
                             formatter: function () {
                                 return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
                             }
-                        }
-                    }
+                        },
+                        pointWidth: 30,
+                    },
                 },
                 series: [
                     {
@@ -167,21 +173,21 @@ function fetchData() {
                         data: finals2024,
                         colorByPoint: true,
                         colors: [
-                            "rgb(123, 45, 67)",
-                            "rgb(255, 0, 100)",
-                            "rgb(34, 123, 230)",
-                            "rgb(210, 178, 99)",
-                            "rgb(75, 200, 180)",
-                            "rgb(10, 90, 220)",
-                            "rgb(255, 123, 50)",
-                            "rgb(140, 70, 90)",
-                            "rgb(180, 255, 60)",
-                            "rgb(90, 40, 250)",
-                            "rgb(200, 80, 120)",
-                            "rgb(30, 200, 80)",
-                            "rgb(190, 255, 220)",
-                            "rgb(100, 10, 190)"
-                        ]
+                            "#4D4D4D", // Dark Gray
+                            "#F15854", // Muted Red
+                            "#5DA5DA", // Soft Blue
+                            "#FAA43A", // Warm Orange
+                            "#DECF3F", // Mustard Yellow
+                            "#F17CB0", // Muted Pink
+                            "#60BD68", // Soft Green
+                            "#B2912F", // Brownish Gold
+                            "#B276B2", // Light Purple
+                            "#CCCCCC", // Light Gray
+                            "#8C8C8C", // Medium Gray
+                            "#6A3D9A", // Deep Purple
+                            "#FFBF44", // Light Orange
+                            "#2A9D8F"  // Teal
+                        ],
                     }
                 ]
             });
