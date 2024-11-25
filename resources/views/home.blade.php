@@ -57,7 +57,8 @@ function fetchData() {
             const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
             const finals2024 = data.finals.map(item => ({
                 y: item.votes,
-                percentage: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
+                d: item.difference,
+                p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
             }));
             const totalVotes = data.totals.total;
             const finalVotes = data.totals.final;
@@ -155,7 +156,7 @@ function fetchData() {
                         dataLabels: {
                             enabled: true,
                             formatter: function () {
-                                return `${humanSize(this.point.y)} // ${this.point.percentage}%`; // Display percentage as data label
+                                return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
                             }
                         }
                     }

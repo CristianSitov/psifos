@@ -82,9 +82,17 @@ class HomeController extends Controller
                 return in_array($item->the_hour, ['now', 'not']);
             });
 
+        $previousValue = null;
         $finals = VotingFinal::query()
             ->orderBy('votes', 'DESC')
-            ->get();
+            ->get()
+            ->map(function ($item) use (&$previousValue) {
+                $difference = $previousValue !== null ? $item->votes - $previousValue : null;
+                $previousValue = $item->votes;
+                $item->difference = abs($difference);
+
+                return $item;
+            });
 
         $totalSum = VotingResult::query()
             ->where('year', '=', 2024)
