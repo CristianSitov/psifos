@@ -82,19 +82,19 @@ class HomeController extends Controller
 
                 $result->the_presence_2019_1_percent = is_null($result->the_presence_2019_1)
                     ? null
-                    : $result->the_presence_2019_1 / $electorsCount2019_1 * 100;
+                    : round($result->the_presence_2019_1 / $electorsCount2019_1 * 100, 3);
                 $result->the_presence_2019_2_percent = is_null($result->the_presence_2019_2)
                     ? null
-                    : $result->the_presence_2019_2 / $electorsCount2019_2 * 100;
+                    : round($result->the_presence_2019_2 / $electorsCount2019_2 * 100, 3);
                 $result->the_presence_2024_1_percent = is_null($result->the_presence_2024_1)
                     ? null
-                    : $result->the_presence_2024_1 / $electorsCount2024_1 * 100;
+                    : round($result->the_presence_2024_1 / $electorsCount2024_1 * 100, 3);
                 $result->the_presence_2025_1_percent = is_null($result->the_presence_2025_1)
                     ? null
-                    : $result->the_presence_2025_1 / $electorsCount2025_1 * 100;
+                    : round($result->the_presence_2025_1 / $electorsCount2025_1 * 100, 3);
                 $result->the_presence_2025_2_percent = is_null($result->the_presence_2025_2)
                     ? null
-                    : $result->the_presence_2025_2 / $electorsCount2025_2 * 100;
+                    : round($result->the_presence_2025_2 / $electorsCount2025_2 * 100, 3);
 
                 return $result;
             });
