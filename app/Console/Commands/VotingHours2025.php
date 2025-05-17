@@ -30,7 +30,7 @@ class VotingHours2025 extends Command
     public function handle(): void
     {
         sleep(random_int(1, 10));
-        logger()->info(date('Y-m-d H:i:s') . ' // Fetching voting results for 2025...');
+        logger()->info(date('Y-m-d H:i:s') . ' // Fetching voting hours for 2025...');
 
 //        $session = 'prezidentiale04052025';
         $session = 'prezidentiale18052025';
