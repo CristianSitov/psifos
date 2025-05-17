@@ -4,16 +4,17 @@ namespace App\Console\Commands;
 
 use App\Models\VotingHour;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
-class VotingHours extends Command
+class VotingHours2025 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:fetch:hours';
+    protected $signature = 'app:fetch:hours:2025';
 
     /**
      * The console command description.
@@ -24,11 +25,14 @@ class VotingHours extends Command
 
     /**
      * Execute the console command.
+     * @throws ConnectionException
      */
-    public function handle()
+    public function handle(): void
     {
+//        $session = 'prezidentiale04052025';
+        $session = 'prezidentiale18052025';
         $timestamp = time();
-        $url = "https://prezenta.roaep.ro/prezidentiale24112024/data/json/simpv/presence/hours.json?_={$timestamp}";
+        $url = "https://prezenta.roaep.ro/{$session}/data/json/simpv/presence/hours.json?_={$timestamp}";
         $this->info('Fetching data from the AEP...');
 
         $response = Http::get($url);
@@ -37,10 +41,10 @@ class VotingHours extends Command
             $data = $response->json();
 
             foreach ($data as $item) {
-                $item['year'] = 2024;
+                $item['year'] = $session;
 
                 VotingHour::updateOrCreate(
-                    ['key' => $item['key']], // Match based on a unique column
+                    ['key' => $item['key'], 'year' => $session], // Match based on a unique column
                     $item // Fillable attributes
                 );
             }

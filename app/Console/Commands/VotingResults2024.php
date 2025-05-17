@@ -9,14 +9,14 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Random\RandomException;
 
-class VotingResults2019 extends Command
+class VotingResults2024 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:fetch:results:2019';
+    protected $signature = 'app:fetch:results:2024';
 
     /**
      * The console command description.
@@ -31,8 +31,7 @@ class VotingResults2019 extends Command
      */
     public function handle(): void
     {
-//        $session = 'prezidentiale10112019';
-        $session = 'prezidentiale24112019';
+        $session = 'prezidentiale24112024';
         $ct = time();
         $hours = VotingHour::query()
             ->where('year', '=', $session)
@@ -43,7 +42,7 @@ class VotingResults2019 extends Command
             sleep(random_int(1, 10));
 
             $ts = $hour->key;
-            $baseUrl = "https://prezenta.roaep.ro/{$session}/data/presence/json/presence_AB_{$ts}.json?_={$ct}";
+            $baseUrl = "https://prezenta.roaep.ro/{$session}/data/json/simpv/presence/presence_{$ts}.json?_={$ct}";
 
             if ($hour->is_done === 0) {
                 $this->info("Fetching data from the AEP for {$ts}...");
@@ -58,6 +57,12 @@ class VotingResults2019 extends Command
                     foreach ($countiesResults as $countyResults) {
                         $countyCollection = collect($countyResults);
 
+                        $countyData = $countyCollection->pull('county');
+                        VotingCounty::updateOrCreate(
+                            ['id' => $countyData['id']], // Match based on a unique column
+                            $countyData // Fillable attributes
+                        );
+
                         $ageRanges = $countyCollection->pull('age_ranges');
 
                         $insertableValues = $countyCollection->toArray();
@@ -69,7 +74,7 @@ class VotingResults2019 extends Command
                         );
 
                         VotingResult::updateOrCreate(
-                            ['county_id' => $countyCollection['id_county'], 'key' => $ts, 'year' => $session],
+                            ['county_id' => $countyData['id'], 'key' => $ts, 'year' => $session],
                             $insertableValues
                         );
                     }

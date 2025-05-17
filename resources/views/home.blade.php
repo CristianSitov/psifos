@@ -28,10 +28,10 @@
                         </div>
 
                         <div class="card-body">
-                            <div id="container-comparison-count"></div>
-                            <div id="container-comparison-final" style="min-height: 600px"></div>
-                            <div id="container-comparison-gross"></div>
-                            <div id="container-comparison-share"></div>
+{{--                            <div id="container-comparison-count"></div>--}}
+{{--                            <div id="container-comparison-final" style="min-height: 600px"></div>--}}
+                            <div id="container-comparison-gross" style="min-height: 600px"></div>
+                            <div id="container-comparison-share" style="min-height: 600px"></div>
                         </div>
                     </div>
                 </div>
@@ -48,25 +48,34 @@ function fetchData() {
     fetch(jsonUrl)
         .then(response => response.json())
         .then(data => {
-            const categories = data.presence.map(item => item.the_key);
-            const presence2019 = data.presence.map(item => item.the_presence_2019);
-            const presence2024 = data.presence.map(item => item.the_presence_2024);
-            const presence2019Share = data.presence.map(item => item.the_presence_2019_percent);
-            const presence2024Share = data.presence.map(item => item.the_presence_2024_percent);
-            const candidates = data.finals.map(item => item.candidate);
-            const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
-            const finals2024 = data.finals.map(item => ({
-                y: item.votes,
-                d: item.difference,
-                p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
-            }));
-            const totalVotes = data.totals.total;
-            const finalVotes = data.totals.final;
-            const eraseVotes = 222_581;
+            const categories = data.presence.map(item => item.day_hour_key);
+            const presence2019_1 = data.presence.map(item => item.the_presence_2019_1);
+            const presence2019_2 = data.presence.map(item => item.the_presence_2019_2);
+            const presence2024_1 = data.presence.map(item => item.the_presence_2024_1);
+            const presence2025_1 = data.presence.map(item => item.the_presence_2025_1);
+            const presence2025_2 = data.presence.map(item => item.the_presence_2025_2);
+            const presence20191Share = data.presence.map(item => item.the_presence_2019_1_percent);
+            const presence20192Share = data.presence.map(item => item.the_presence_2019_2_percent);
+            const presence20241Share = data.presence.map(item => item.the_presence_2024_1_percent);
+            const presence20251Share = data.presence.map(item => item.the_presence_2025_1_percent);
+            const presence20252Share = data.presence.map(item => item.the_presence_2025_2_percent);
+            // const candidates = data.finals.map(item => item.candidate);
+            // const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
+            // const finals2025 = data.finals.map(item => ({
+            //     y: item.votes,
+            //     d: item.difference,
+            //     p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
+            // }));
+            // const totalVotes = data.totals.total;
+            // const finalVotes = data.totals.final;
+            // const eraseVotes = 222_581;
 
             Highcharts.chart('container-comparison-gross', {
                 chart: {
-                    type: 'column'
+                //     type: 'column'
+                    zooming: {
+                        type: 'x'
+                    }
                 },
                 title: {
                     text: 'Presence Comparison Over Years - Gross'
@@ -78,28 +87,44 @@ function fetchData() {
                     }
                 },
                 yAxis: {
+                    // type: 'logarithmic',
                     title: {
                         text: 'Presence'
                     }
                 },
                 series: [
                     {
-                        name: 'Presence 2019',
-                        data: presence2019,
+                        name: 'Presence 2019 - 1',
+                        data: presence2019_1,
                         color: 'rgba(124, 181, 236, 0.8)' // Optional: custom color
                     },
                     {
-                        name: 'Presence 2024',
-                        data: presence2024,
+                        name: 'Presence 2019 - 2',
+                        data: presence2019_2,
+                        color: 'rgba(104, 151, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2024 - 1',
+                        data: presence2024_1,
+                        color: 'rgba(80, 130, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2025 - 1',
+                        data: presence2025_1,
+                        color: 'rgba(50, 80, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2025 - 2',
+                        data: presence2025_2,
                         color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
                     }
                 ]
             });
 
             Highcharts.chart('container-comparison-share', {
-                chart: {
-                    type: 'column'
-                },
+                // chart: {
+                //     type: 'column'
+                // },
                 title: {
                     text: 'Presence Comparison Over Years - Share'
                 },
@@ -116,82 +141,97 @@ function fetchData() {
                 },
                 series: [
                     {
-                        name: 'Presence 2019',
-                        data: presence2019Share,
+                        name: 'Presence 2019 - 1',
+                        data: presence20191Share,
                         color: 'rgba(124, 181, 236, 0.8)' // Optional: custom color
                     },
                     {
-                        name: 'Presence 2024',
-                        data: presence2024Share,
+                        name: 'Presence 2019 - 2',
+                        data: presence20192Share,
+                        color: 'rgba(104, 151, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2024 - 1',
+                        data: presence20241Share,
+                        color: 'rgba(80, 130, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2025 - 1',
+                        data: presence20251Share,
+                        color: 'rgba(50, 80, 236, 0.8)' // Optional: custom color
+                    },
+                    {
+                        name: 'Presence 2025 - 2',
+                        data: presence20252Share,
                         color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
                     }
                 ]
             });
 
-            Highcharts.chart('container-comparison-final', {
-                chart: {
-                    type: 'bar'
-                },
-                title: {
-                    text: 'Finals 2024'
-                },
-                xAxis: {
-                    categories: candidates,
-                    title: {
-                        text: 'Candidates',
-                        style: {
-                            fontSize: '20px'
-                        }
-                    },
-                    labels: {
-                        skew3d: true,
-                        style: {
-                            fontSize: '10px',
-                            textOverflow: 'ellipsis',
-                            width: '100px',
-                        }
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Distribution'
-                    }
-                },
-                plotOptions: {
-                    series: {
-                        dataLabels: {
-                            enabled: true,
-                            formatter: function () {
-                                return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
-                            }
-                        },
-                        pointWidth: 30,
-                    },
-                },
-                series: [
-                    {
-                        name: 'Finals 2024',
-                        data: finals2024,
-                        colorByPoint: true,
-                        colors: [
-                            "#4D4D4D", // Dark Gray
-                            "#F15854", // Muted Red
-                            "#5DA5DA", // Soft Blue
-                            "#FAA43A", // Warm Orange
-                            "#DECF3F", // Mustard Yellow
-                            "#F17CB0", // Muted Pink
-                            "#60BD68", // Soft Green
-                            "#B2912F", // Brownish Gold
-                            "#B276B2", // Light Purple
-                            "#CCCCCC", // Light Gray
-                            "#8C8C8C", // Medium Gray
-                            "#6A3D9A", // Deep Purple
-                            "#FFBF44", // Light Orange
-                            "#2A9D8F"  // Teal
-                        ],
-                    }
-                ]
-            });
+            // Highcharts.chart('container-comparison-final', {
+            //     chart: {
+            //         type: 'bar'
+            //     },
+            //     title: {
+            //         text: 'Finals 2025'
+            //     },
+            //     xAxis: {
+            //         categories: candidates,
+            //         title: {
+            //             text: 'Candidates',
+            //             style: {
+            //                 fontSize: '20px'
+            //             }
+            //         },
+            //         labels: {
+            //             skew3d: true,
+            //             style: {
+            //                 fontSize: '10px',
+            //                 textOverflow: 'ellipsis',
+            //                 width: '100px',
+            //             }
+            //         }
+            //     },
+            //     yAxis: {
+            //         title: {
+            //             text: 'Distribution'
+            //         }
+            //     },
+            //     plotOptions: {
+            //         series: {
+            //             dataLabels: {
+            //                 enabled: true,
+            //                 formatter: function () {
+            //                     return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
+            //                 }
+            //             },
+            //             pointWidth: 30,
+            //         },
+            //     },
+            //     series: [
+            //         {
+            //             name: 'Finals 2024',
+            //             data: finals2025,
+            //             colorByPoint: true,
+            //             colors: [
+            //                 "#4D4D4D", // Dark Gray
+            //                 "#F15854", // Muted Red
+            //                 "#5DA5DA", // Soft Blue
+            //                 "#FAA43A", // Warm Orange
+            //                 "#DECF3F", // Mustard Yellow
+            //                 "#F17CB0", // Muted Pink
+            //                 "#60BD68", // Soft Green
+            //                 "#B2912F", // Brownish Gold
+            //                 "#B276B2", // Light Purple
+            //                 "#CCCCCC", // Light Gray
+            //                 "#8C8C8C", // Medium Gray
+            //                 "#6A3D9A", // Deep Purple
+            //                 "#FFBF44", // Light Orange
+            //                 "#2A9D8F"  // Teal
+            //             ],
+            //         }
+            //     ]
+            // });
 
             Highcharts.chart('container-comparison-count', {
                 chart: {

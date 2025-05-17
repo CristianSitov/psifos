@@ -15,8 +15,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/alegeri2024/turul-1', [HomeController::class, 'index'])
-    ->name('alegeri2024.turul-1');
+Route::get('/prezidentiale2025', [HomeController::class, 'index'])
+    ->name('prezidentiale2025');
 
 Route::get('/status.json', [HomeController::class, 'status']);
 

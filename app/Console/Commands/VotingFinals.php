@@ -7,6 +7,7 @@ use App\Models\VotingFinal;
 use App\Models\VotingHour;
 use App\Models\VotingResult;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Random\RandomException;
 
@@ -29,6 +30,7 @@ class VotingFinals extends Command
     /**
      * Execute the console command.
      * @throws RandomException
+     * @throws ConnectionException
      */
     public function handle(): void
     {

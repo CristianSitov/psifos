@@ -9,27 +9,15 @@ use Illuminate\Support\Facades\Http;
 
 class VotingHours2019 extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:fetch:hours:2019';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Fetch hours';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
+//        $session = 'prezidentiale10112019';
+        $session = 'prezidentiale24112019';
         $timestamp = time();
-        $url = "https://prezenta.roaep.ro/prezidentiale10112019/data/presence/json/hours.json?_={$timestamp}";
+        $url = "https://prezenta.roaep.ro/{$session}/data/presence/json/hours.json?_={$timestamp}";
         $this->info('Fetching data from the AEP...');
 
         $response = Http::get($url);
@@ -38,16 +26,18 @@ class VotingHours2019 extends Command
             $data = $response->json()['hours'];
 
             foreach ($data as $item) {
-                $item['year'] = 2019;
+                if ($item['value'] === 'now') {
+                    continue;
+                }
+
+                $item['year'] = $session;
                 $item['name'] = $item['label'];
                 $item['key'] = $item['value'];
-                $item['timestamp'] = $item['value'] === 'now'
-                    ? 'now'
-                    : Carbon::createFromFormat('Y-m-d_H-i', $item['value']);
+                $item['timestamp'] = Carbon::createFromFormat('Y-m-d_H-i', $item['value']);
 
                 VotingHour::updateOrCreate(
-                    ['key' => $item['key']], // Match based on a unique column
-                    $item // Fillable attributes
+                    ['key' => $item['key'], 'year' => $session],
+                    $item
                 );
             }
 

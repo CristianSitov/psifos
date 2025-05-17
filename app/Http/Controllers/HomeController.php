@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Console\Commands\VotingResults;
 use App\Models\VotingFinal;
 use App\Models\VotingResult;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Staudenmeir\LaravelCte\Query\Builder;
 
 class HomeController extends Controller
 {
@@ -23,7 +25,7 @@ class HomeController extends Controller
     /**
      * Show the application dashboard.
      *
-     * @return \Illuminate\Http\Response
+     * @return Factory|View|Application|\Illuminate\View\View
      */
     public function index()
     {
@@ -32,81 +34,86 @@ class HomeController extends Controller
 
     public function status()
     {
-        $results = VotingResult::query()
+        $sourceQuery = VotingResult::query()
             ->select([
-                DB::raw("CASE
-                        WHEN voting_results.key = 'now' AND voting_results.year = '2019' THEN 'not'
-                        WHEN voting_results.key = 'now' THEN voting_results.key
-                        WHEN DATE_FORMAT(voting_results.key, '%Y-%m-%d') IN ('2019-11-10', '2024-11-24') THEN DATE_FORMAT(voting_results.key, '%H-%i')
-                    END AS the_hour"),
-                DB::raw("CASE
-                        WHEN voting_results.key = 'now' AND voting_results.year = '2019' THEN 'not'
-                        WHEN voting_results.key = 'now' THEN voting_results.key
-                        WHEN DATE_FORMAT(voting_results.key, '%Y-%m-%d') IN ('2019-11-10', '2024-11-24') THEN DATE_FORMAT(voting_results.key, '%Y-%m-%d')
-                        ELSE NULL
-                    END AS eligible"),
+                DB::raw("voting_results.key AS the_hour"),
                 DB::raw("CAST(SUM(CASE
-                        WHEN voting_results.year = 2019 THEN voting_results.LT
-                    END) AS UNSIGNED) AS the_presence_2019"),
+                        WHEN voting_results.year = 'prezidentiale10112019' THEN voting_results.LT
+                    END) AS UNSIGNED) AS the_presence_2019_1"),
                 DB::raw("CAST(SUM(CASE
-                        WHEN voting_results.year = 2024 THEN voting_results.LT
-                    END) AS UNSIGNED) AS the_presence_2024"),
+                        WHEN voting_results.year = 'prezidentiale24112019' THEN voting_results.LT
+                    END) AS UNSIGNED) AS the_presence_2019_2"),
+                DB::raw("CAST(SUM(CASE
+                        WHEN voting_results.year = 'prezidentiale24112024' THEN voting_results.LT
+                    END) AS UNSIGNED) AS the_presence_2024_1"),
+                DB::raw("CAST(SUM(CASE
+                        WHEN voting_results.year = 'prezidentiale04052025' THEN voting_results.LT
+                    END) AS UNSIGNED) AS the_presence_2025_1"),
+                DB::raw("CAST(SUM(CASE
+                        WHEN voting_results.year = 'prezidentiale18052025' THEN voting_results.LT
+                    END) AS UNSIGNED) AS the_presence_2025_2"),
             ])
             ->groupBy('the_hour')
-            ->havingNotNull('eligible')
-            ->orderBy('the_hour', 'ASC')
+            ->orderBy('the_hour', 'ASC');
+
+        $processedResults = (new Builder(DB::connection()))
+            ->withExpression('source', $sourceQuery)
+            ->select([
+                DB::raw("DATE_FORMAT(STR_TO_DATE(REPLACE(the_hour, '_', ' '), '%Y-%m-%d %H-%i'), '%W_%H-00') AS day_hour_key"),
+                DB::raw("MAX(CASE WHEN the_presence_2019_1 IS NOT NULL THEN the_presence_2019_1 END) AS the_presence_2019_1"),
+                DB::raw("MAX(CASE WHEN the_presence_2019_2 IS NOT NULL THEN the_presence_2019_2 END) AS the_presence_2019_2"),
+                DB::raw("MAX(CASE WHEN the_presence_2024_1 IS NOT NULL THEN the_presence_2024_1 END) AS the_presence_2024_1"),
+                DB::raw("MAX(CASE WHEN the_presence_2025_1 IS NOT NULL THEN the_presence_2025_1 END) AS the_presence_2025_1"),
+                DB::raw("MAX(CASE WHEN the_presence_2025_2 IS NOT NULL THEN the_presence_2025_2 END) AS the_presence_2025_2"),
+            ])
+            ->from('source')
+            ->groupBy('day_hour_key')
+            ->orderByRaw("FIELD(LEFT(day_hour_key, LOCATE('_', day_hour_key)-1), 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Monday'), CAST(SUBSTRING_INDEX(day_hour_key, '_', -1) AS UNSIGNED)")
+            ->havingRaw("`day_hour_key` IS NOT NULL
+   AND LEFT(day_hour_key, LOCATE('_', day_hour_key) - 1) NOT IN ('Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Monday')")
+//            ->ddRawSql();
             ->get()
             ->map(function ($result) {
-                $electorsCount2019 = 18_217_156;
-                $electorsCount2024 = 18_008_480;
+                $electorsCount2019_1 = 18_217_156;
+                $electorsCount2019_2 = 18_217_411;
+                $electorsCount2024_1 = 18_008_480;
+                $electorsCount2025_1 = 17_988_031;
+                $electorsCount2025_2 = 17_988_218;
 
-                $result->the_presence_2019_percent = $result->the_presence_2019 / $electorsCount2019 * 100;
-                $result->the_presence_2024_percent = $result->the_presence_2024 / $electorsCount2024 * 100;
+                $result->the_presence_2019_1_percent = $result->the_presence_2019_1 / $electorsCount2019_1 * 100;
+                $result->the_presence_2019_2_percent = $result->the_presence_2019_2 / $electorsCount2019_2 * 100;
+                $result->the_presence_2024_1_percent = $result->the_presence_2024_1 / $electorsCount2024_1 * 100;
+                $result->the_presence_2025_1_percent = $result->the_presence_2025_1 / $electorsCount2025_1 * 100;
+                $result->the_presence_2025_2_percent = $result->the_presence_2025_2 / $electorsCount2025_2 * 100;
 
                 return $result;
             });
 
-        // find 'now' value
-        $nowValue = $results->where('the_hour', 'now')->first();
-        // find the first null value in 2024
-        $processedResults = $results
-            ->each(function ($item) use ($nowValue) {
-                if ($item->the_presence_2024 === null) {
-                    $item->the_presence_2024 = $nowValue->the_presence_2024;
-                    $item->the_presence_2024_percent = $nowValue->the_presence_2024_percent;
+//        $previousValue = null;
+//        $finals = VotingFinal::query()
+//            ->orderBy('votes', 'DESC')
+//            ->get()
+//            ->map(function ($item) use (&$previousValue) {
+//                $difference = $previousValue !== null ? $item->votes - $previousValue : null;
+//                $previousValue = $item->votes;
+//                $item->difference = abs($difference);
+//
+//                return $item;
+//            });
 
-                    return $item;
-                }
-            })
-            ->reject(function ($item) {
-                return in_array($item->the_hour, ['now', 'not']);
-            });
-
-        $previousValue = null;
-        $finals = VotingFinal::query()
-            ->orderBy('votes', 'DESC')
-            ->get()
-            ->map(function ($item) use (&$previousValue) {
-                $difference = $previousValue !== null ? $item->votes - $previousValue : null;
-                $previousValue = $item->votes;
-                $item->difference = abs($difference);
-
-                return $item;
-            });
-
-        $totalSum = VotingResult::query()
-            ->where('year', '=', 2024)
-            ->where('key', '=', 'now')
-            ->sum('LT');
-        $finalSum = VotingFinal::sum('votes');
+//        $totalSum = VotingResult::query()
+//            ->where('year', '=', 2025)
+//            ->where('key', '=', 'now')
+//            ->sum('LT');
+//        $finalSum = VotingFinal::sum('votes');
 
         return response()->json([
             'presence' => $processedResults,
-            'finals' => $finals,
-            'totals' => [
-                'total' => (int) $totalSum,
-                'final' => (int) $finalSum,
-            ],
+//            'finals' => $finals,
+//            'totals' => [
+//                'total' => (int) $totalSum,
+//                'final' => (int) $finalSum,
+//            ],
         ]);
     }
 }

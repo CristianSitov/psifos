@@ -9,6 +9,7 @@
         "laravel/breeze": "^2.0",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.0",
+        "staudenmeir/laravel-cte": "^1.0",
         "takielias/tablar": "^11.9"
     },
     "require-dev": {
