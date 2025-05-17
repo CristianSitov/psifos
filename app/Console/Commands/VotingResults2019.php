@@ -31,7 +31,9 @@ class VotingResults2019 extends Command
      */
     public function handle(): void
     {
-//        $session = 'prezidentiale10112019';
+        sleep(random_int(1, 10));
+
+        //        $session = 'prezidentiale10112019';
         $session = 'prezidentiale24112019';
         $ct = time();
         $hours = VotingHour::query()
