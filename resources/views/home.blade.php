@@ -149,6 +149,7 @@
                 .then(data => {
                     const categories = data.presence.map(i => i.day_hour_key);
                     const candidates = data.finals.map(item => item.candidate);
+                    const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
                     const finals2025 = data.finals.map(item => ({
                         y: item.votes,
                         d: item.difference,
