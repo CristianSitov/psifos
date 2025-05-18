@@ -28,6 +28,7 @@
                         </div>
 
                         <div class="card-body">
+                            <div id="graph-controls" style="margin-bottom: 1em;"></div>
                             <div id="container-comparison-gross" style="min-height: 600px"></div>
                             <div id="container-comparison-share" style="min-height: 600px"></div>
                         </div>
@@ -37,302 +38,231 @@
         </div>
     </div>
 
-<script>
-// URL of the JSON file
-const jsonUrl = '{{ url('/') }}/status.json';
+    <script>
+        const jsonUrl = '{{ url('/') }}/status.json';
+        const AUTO_REFRESH_MS = 60000;
+        const seriesNames = [
+            'Presence 2019 - 1',
+            'Presence 2019 - 2',
+            'Presence 2024 - 1',
+            'Presence 2025 - 1',
+            'Presence 2025 - 2'
+        ];
 
-const STORAGE_KEY = "highcharts-zoom";
+        let grossChart = null;
+        let shareChart = null;
 
-function saveZoomToStorage(xMin, xMax) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ xMin, xMax }));
-}
-
-function getZoomFromStorage() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    try {
-        const { xMin, xMax } = JSON.parse(raw);
-        if (!isNaN(xMin) && !isNaN(xMax)) {
-            return { xMin, xMax };
+        // === URL Param Utilities ===
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const xMin = parseFloat(params.get('xMin'));
+            const xMax = parseFloat(params.get('xMax'));
+            const visible = params.get('visible')
+                ?.split(',')
+                .map(v => parseInt(v, 10))
+                .filter(v => !isNaN(v));
+            return {
+                xMin: !isNaN(xMin) ? xMin : null,
+                xMax: !isNaN(xMax) ? xMax : null,
+                visible,
+            };
         }
-    } catch (e) {}
-    return null;
-}
-
-function clearZoomFromStorage() {
-    localStorage.removeItem(STORAGE_KEY);
-}
-
-// Fetch the JSON data
-function fetchData() {
-    const zoomState = getZoomFromStorage();
-
-    fetch(jsonUrl)
-        .then(response => response.json())
-        .then(data => {
-            const categories = data.presence.map(item => item.day_hour_key);
-            const presence2019_1 = data.presence.map(item => item.the_presence_2019_1);
-            const presence2019_2 = data.presence.map(item => item.the_presence_2019_2);
-            const presence2024_1 = data.presence.map(item => item.the_presence_2024_1);
-            const presence2025_1 = data.presence.map(item => item.the_presence_2025_1);
-            const presence2025_2 = data.presence.map(item => item.the_presence_2025_2);
-            const presence20191Share = data.presence.map(item => item.the_presence_2019_1_percent);
-            const presence20192Share = data.presence.map(item => item.the_presence_2019_2_percent);
-            const presence20241Share = data.presence.map(item => item.the_presence_2024_1_percent);
-            const presence20251Share = data.presence.map(item => item.the_presence_2025_1_percent);
-            const presence20252Share = data.presence.map(item => item.the_presence_2025_2_percent);
-            // const candidates = data.finals.map(item => item.candidate);
-            // const total = data.finals.reduce((sum, item) => sum + item.votes, 0);
-            // const finals2025 = data.finals.map(item => ({
-            //     y: item.votes,
-            //     d: item.difference,
-            //     p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
-            // }));
-
-            const comparison_gross = Highcharts.chart('container-comparison-gross', {
-                chart: {
-                //     type: 'column'
-                    zooming: {
-                        type: 'x'
-                    },
-                    events: {
-                        load: function () {
-                            const chart = this;
-                            const xAxis = chart.xAxis[0];
-
-                            const dataMin = xAxis.dataMin;
-                            const dataMax = xAxis.dataMax;
-                            const range = dataMax - dataMin;
-
-                            const start = dataMin + (3/4) * range;
-                            const end = dataMax;
-
-                            xAxis.setExtremes(start, end);
-                        },
-                        selection: function (event) {
-                            if (event.xAxis) {
-                                const xMin = event.xAxis[0].min;
-                                const xMax = event.xAxis[0].max;
-                                saveZoomToStorage(xMin, xMax);
-                            } else {
-                                clearZoomFromStorage(); // reset
-                            }
-                        },
-                        redraw: function () {
-                            if (!this.resetZoomButton && getZoomFromStorage()) {
-                                this.showResetZoom();
-                            }
-                        }
-                    }
-                },
-                title: {
-                    text: 'Presence Comparison Over Years - Gross'
-                },
-                xAxis: {
-                    categories: categories,
-                    title: {
-                        text: 'Categories'
-                    }
-                },
-                yAxis: {
-                    // type: 'logarithmic',
-                    title: {
-                        text: 'Presence'
-                    }
-                },
-                series: [
-                    {
-                        name: 'Presence 2019 - 1',
-                        data: presence2019_1,
-                        color: 'rgba(150, 0, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2019 - 2',
-                        data: presence2019_2,
-                        color: 'rgba(100, 0, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2024 - 1',
-                        data: presence2024_1,
-                        color: 'rgba(160, 160, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2025 - 1',
-                        data: presence2025_1,
-                        color: 'rgba(50, 100, 255, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2025 - 2',
-                        data: presence2025_2,
-                        color: 'rgba(0, 50, 255, 0.8)'
-                    }
-                ],
-                tooltip: {
-                    shared: true,
-                    useHTML: true,
-                    formatter: function () {
-                        return `<table>
-                                    ${this.points.map(point => `
-                                        <tr>
-                                            <td style="color:${point.color}; padding-right: 10px; white-space: nowrap; font-family: 'Courier New'" font-size: 0.75em>
-                                                <b>● ${point.series.name}</b>
-                                            </td>
-                                            <td style="text-align: right; min-width: 70px; white-space: nowrap; font-family: 'Courier New'; font-size: 0.75em">
-                                                <b>${humanSize(point.y)}</b>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </table>`;
-                    }
+        function updateUrlParams(updates) {
+            const params = new URLSearchParams(window.location.search);
+            for (const [key, value] of Object.entries(updates)) {
+                if (value === null || value === undefined || value === '') {
+                    params.delete(key);
+                } else {
+                    params.set(key, Array.isArray(value) ? value.join(',') : value);
                 }
-            });
-
-            if (zoomState) {
-                const axis = comparison_gross.xAxis[0];
-                axis.setExtremes(zoomState.xMin, zoomState.xMax, true, false);
-
-                // Manually show Reset Zoom button
-                comparison_gross.showResetZoom();
-
-                // Optional: store the zoom flag so reset works properly
-                comparison_gross.resetZoomButton = comparison_gross.renderer.button(
-                    "Reset Zoom",
-                    comparison_gross.plotLeft + 10,
-                    comparison_gross.plotTop + 10,
-                    function () {
-                        axis.setExtremes(null, null);
-                        clearZoomFromStorage();
-                        this.destroy();
-                    }
-                ).attr({
-                    zIndex: 20
-                }).add();
             }
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            history.replaceState(null, '', newUrl);
+        }
 
-            Highcharts.chart('container-comparison-share', {
-                // chart: {
-                //     type: 'column'
-                // },
-                title: {
-                    text: 'Presence Comparison Over Years - Share'
-                },
-                xAxis: {
-                    categories: categories,
-                    title: {
-                        text: 'Categories'
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Presence'
-                    }
-                },
-                series: [
-                    {
-                        name: 'Presence 2019 - 1',
-                        data: presence20191Share,
-                        color: 'rgba(124, 0, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2019 - 2',
-                        data: presence20192Share,
-                        color: 'rgba(104, 0, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2024 - 1',
-                        data: presence20241Share,
-                        color: 'rgba(80, 80, 0, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2025 - 1',
-                        data: presence20251Share,
-                        color: 'rgba(50, 100, 255, 0.8)'
-                    },
-                    {
-                        name: 'Presence 2025 - 2',
-                        data: presence20252Share,
-                        color: 'rgba(0, 50, 255, 0.8)'
-                    }
-                ],
-                tooltip: {
-                    shared: true,
-                    formatter: function () {
-                        return this.points.map(point =>
-                            `<span style="color:${point.color}">●</span> ${point.series.name}: <b>${point.y.toFixed(2)}%</b><br/>`
-                        ).join('');
-                    }
+        // === UI ===
+        function humanSize(value) {
+            if (value == null || isNaN(value)) return '';
+            return Highcharts.numberFormat(value / 1_000_000, 2, '.', '') + ' M';
+        }
+
+        function renderCheckboxes(visibleSet) {
+            const container = document.getElementById('graph-controls');
+            container.innerHTML = '';
+            seriesNames.forEach((name, i) => {
+                const label = document.createElement('label');
+                label.style.marginRight = '1em';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = visibleSet.has(i);
+                checkbox.addEventListener('change', () => {
+                    const newVisible = Array.from(document.querySelectorAll('#graph-controls input[type="checkbox"]'))
+                        .map((cb, idx) => cb.checked ? idx : null)
+                        .filter(i => i !== null);
+                    updateUrlParams({ visible: newVisible });
+                    fetchData();
+                });
+                label.appendChild(checkbox);
+                label.append(' ' + name);
+                container.appendChild(label);
+            });
+        }
+
+        // === Sync ===
+        function syncVisibility(index, visible) {
+            [grossChart, shareChart].forEach(chart => {
+                if (chart && chart.series[index]) {
+                    chart.series[index].setVisible(visible, false);
                 }
             });
+            if (grossChart) grossChart.redraw();
+            if (shareChart) shareChart.redraw();
+        }
 
-            // Highcharts.chart('container-comparison-final', {
-            //     chart: {
-            //         type: 'bar'
-            //     },
-            //     title: {
-            //         text: 'Finals 2025'
-            //     },
-            //     xAxis: {
-            //         categories: candidates,
-            //         title: {
-            //             text: 'Candidates',
-            //             style: {
-            //                 fontSize: '20px'
-            //             }
-            //         },
-            //         labels: {
-            //             skew3d: true,
-            //             style: {
-            //                 fontSize: '10px',
-            //                 textOverflow: 'ellipsis',
-            //                 width: '100px',
-            //             }
-            //         }
-            //     },
-            //     yAxis: {
-            //         title: {
-            //             text: 'Distribution'
-            //         }
-            //     },
-            //     plotOptions: {
-            //         series: {
-            //             dataLabels: {
-            //                 enabled: true,
-            //                 formatter: function () {
-            //                     return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
-            //                 }
-            //             },
-            //             pointWidth: 30,
-            //         },
-            //     },
-            //     series: [
-            //         {
-            //             name: 'Finals 2024',
-            //             data: finals2025,
-            //             colorByPoint: true,
-            //             colors: [
-            //                 "#F15854", // Muted Red
-            //                 "#5DA5DA", // Soft Blue
-            //             ],
-            //         }
-            //     ]
-            // });
+        function handleLegendClick(index) {
+            const currentVisible = grossChart.series[index].visible;
+            const newVisibleSet = new Set(grossChart.series
+                .map((s, i) => (i === index ? !currentVisible : s.visible ? i : null))
+                .filter(i => i !== null));
+            updateUrlParams({ visible: [...newVisibleSet].sort((a, b) => a - b) });
+            fetchData();
+        }
 
-        })
-        .catch(error => console.error('Error fetching the JSON data:', error));
-}
+        function syncZoom(min, max) {
+            [grossChart, shareChart].forEach(chart => {
+                if (chart && chart.xAxis[0]) {
+                    chart.xAxis[0].setExtremes(min, max, true, false);
+                }
+            });
+        }
 
-// Fetch immediately and then every minute
-fetchData(); // Initial fetch
-setInterval(fetchData, 60000); // Fetch every 60000ms (1 minute)
+        // === Main ===
+        function fetchData() {
+            const { xMin, xMax, visible } = getUrlParams();
+            const visibleSet = new Set(visible ?? [0, 1, 2, 3, 4]);
+            renderCheckboxes(visibleSet);
 
-function humanSize(value) {
-    if (value == null || isNaN(value)) return '';
+            fetch(jsonUrl)
+                .then(res => res.json())
+                .then(data => {
+                    const categories = data.presence.map(i => i.day_hour_key);
+                    const grossColors = [
+                        'rgba(150, 0, 0, 0.8)',
+                        'rgba(100, 0, 0, 0.8)',
+                        'rgba(160, 160, 0, 0.8)',
+                        'rgba(50, 100, 255, 0.8)',
+                        'rgba(0, 50, 255, 0.8)'
+                    ];
 
-    const millions = value / 1_000_000;
+                    const grossData = [
+                        data.presence.map(i => i.the_presence_2019_1),
+                        data.presence.map(i => i.the_presence_2019_2),
+                        data.presence.map(i => i.the_presence_2024_1),
+                        data.presence.map(i => i.the_presence_2025_1),
+                        data.presence.map(i => i.the_presence_2025_2),
+                    ];
 
-    // Example: 1.234 M
-    return Highcharts.numberFormat(millions, 2, '.', '') + ' M';
-}
+                    const shareData = [
+                        data.presence.map(i => i.the_presence_2019_1_percent),
+                        data.presence.map(i => i.the_presence_2019_2_percent),
+                        data.presence.map(i => i.the_presence_2024_1_percent),
+                        data.presence.map(i => i.the_presence_2025_1_percent),
+                        data.presence.map(i => i.the_presence_2025_2_percent),
+                    ];
 
-</script>
+                    if (grossChart) grossChart.destroy();
+                    if (shareChart) shareChart.destroy();
+
+                    const createSeries = (dataArr) =>
+                        seriesNames.map((name, i) => ({
+                            name,
+                            data: dataArr[i],
+                            color: grossColors[i],
+                            visible: visibleSet.has(i),
+                            events: {
+                                legendItemClick: function () {
+                                    handleLegendClick(i);
+                                    return false;
+                                }
+                            }
+                        }));
+
+                    grossChart = Highcharts.chart('container-comparison-gross', {
+                        chart: {
+                            zooming: { type: 'x' },
+                            events: {
+                                load() {
+                                    const xAxis = this.xAxis[0];
+                                    if (xMin !== null && xMax !== null) {
+                                        xAxis.setExtremes(xMin, xMax, true, false);
+                                    } else {
+                                        const dataMin = xAxis.dataMin, dataMax = xAxis.dataMax;
+                                        xAxis.setExtremes(dataMin + (dataMax - dataMin) * 2 / 3, dataMax);
+                                    }
+                                },
+                                selection(event) {
+                                    if (event.xAxis) {
+                                        const min = event.xAxis[0].min;
+                                        const max = event.xAxis[0].max;
+                                        updateUrlParams({ xMin: min.toFixed(2), xMax: max.toFixed(2) });
+                                        syncZoom(min, max);
+                                    } else {
+                                        updateUrlParams({ xMin: null, xMax: null });
+                                        syncZoom(null, null);
+                                    }
+                                    return false;
+                                }
+                            }
+                        },
+                        title: { text: 'Presence Comparison Over Years - Gross' },
+                        xAxis: { categories, title: { text: 'Time' } },
+                        yAxis: { title: { text: 'Presence (Millions)' } },
+                        tooltip: {
+                            shared: true,
+                            useHTML: true,
+                            formatter: function () {
+                                return `<table>${
+                                    this.points.map(p => `
+                                <tr>
+                                    <td style="color:${p.color}; padding-right:10px; white-space:nowrap;">
+                                        ● ${p.series.name}
+                                    </td>
+                                    <td style="text-align:right; min-width:70px;">
+                                        <b>${humanSize(p.y)}</b>
+                                    </td>
+                                </tr>
+                            `).join('')
+                                }</table>`;
+                            }
+                        },
+                        series: createSeries(grossData)
+                    });
+
+                    shareChart = Highcharts.chart('container-comparison-share', {
+                        chart: { zooming: { type: 'x' } },
+                        title: { text: 'Presence Comparison Over Years - Share' },
+                        xAxis: { categories, title: { text: 'Time' } },
+                        yAxis: { title: { text: 'Share (%)' } },
+                        tooltip: {
+                            shared: true,
+                            formatter: function () {
+                                return this.points.map(p =>
+                                    `<span style="color:${p.color}">●</span> ${p.series.name}: <b>${p.y.toFixed(2)}%</b><br/>`
+                                ).join('');
+                            }
+                        },
+                        series: createSeries(shareData)
+                    });
+
+                    if (xMin !== null && xMax !== null) {
+                        syncZoom(xMin, xMax);
+                    }
+                })
+                .catch(err => console.error("Fetch error:", err));
+        }
+
+        // === Init ===
+        fetchData();
+        setInterval(fetchData, AUTO_REFRESH_MS);
+    </script>
 @endsection
