@@ -314,8 +314,8 @@
                                 data: finals2025,
                                 colorByPoint: true,
                                 colors: [
-                                    "#F15854", // Muted Red
-                                    "#5DA5DA", // Soft Blue
+                                    "rgb(221,143,61)", // Muted Red
+                                    "#0864bf", // Soft Blue
                                 ],
                             }
                         ]
