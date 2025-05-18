@@ -36,7 +36,7 @@ class HomeController extends Controller
     {
         $sourceQuery = VotingResult::query()
             ->select([
-                DB::raw("IF(voting_results.key = 'now', DATE_FORMAT(CONVERT_TZ(NOW() + INTERVAL 1 HOUR,'UTC','Europe/Bucharest'), '%Y-%m-%d_%H-00'), voting_results.key) AS the_hour"),
+                DB::raw("IF(voting_results.key = 'now', DATE_FORMAT(CONVERT_TZ(NOW(),'UTC','Europe/Bucharest'), '%Y-%m-%d_%H-00'), voting_results.key) AS the_hour"),
                 DB::raw("CAST(SUM(CASE
                         WHEN voting_results.year = 'prezidentiale10112019' THEN voting_results.LT
                     END) AS UNSIGNED) AS the_presence_2019_1"),
