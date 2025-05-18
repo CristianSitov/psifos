@@ -122,7 +122,7 @@ function fetchData() {
                     }
                 },
                 yAxis: {
-                    type: 'logarithmic',
+                    // type: 'logarithmic',
                     title: {
                         text: 'Presence'
                     }
@@ -199,27 +199,27 @@ function fetchData() {
                 series: [
                     {
                         name: 'Presence 2019 - 1',
-                        data: presence20191Share,
+                        data: presence20191Share+'%',
                         color: 'rgba(124, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2019 - 2',
-                        data: presence20192Share,
+                        data: presence20192Share+'%',
                         color: 'rgba(104, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2024 - 1',
-                        data: presence20241Share,
+                        data: presence20241Share+'%',
                         color: 'rgba(80, 80, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 1',
-                        data: presence20251Share,
+                        data: presence20251Share+'%',
                         color: 'rgba(50, 100, 255, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 2',
-                        data: presence20252Share,
+                        data: presence20252Share+'%',
                         color: 'rgba(0, 50, 255, 0.8)'
                     }
                 ]
