@@ -99,17 +99,17 @@ class HomeController extends Controller
                 return $result;
             });
 
-//        $previousValue = null;
-//        $finals = VotingFinal::query()
-//            ->orderBy('votes', 'DESC')
-//            ->get()
-//            ->map(function ($item) use (&$previousValue) {
-//                $difference = $previousValue !== null ? $item->votes - $previousValue : null;
-//                $previousValue = $item->votes;
-//                $item->difference = abs($difference);
-//
-//                return $item;
-//            });
+        $previousValue = null;
+        $finals = VotingFinal::query()
+            ->orderBy('votes', 'DESC')
+            ->get()
+            ->map(function ($item) use (&$previousValue) {
+                $difference = $previousValue !== null ? $item->votes - $previousValue : null;
+                $previousValue = $item->votes;
+                $item->difference = abs($difference);
+
+                return $item;
+            });
 
         $totalSum = VotingResult::query()
             ->where('year', '=', 'prezidentiale18052025')
@@ -119,11 +119,7 @@ class HomeController extends Controller
 
         return response()->json([
             'presence' => $processedResults,
-//            'finals' => $finals,
-            'totals' => [
-                'total' => (int) $totalSum,
-                'final' => (int) $finalSum,
-            ],
+            'finals' => $finals,
         ]);
     }
 }

@@ -38,7 +38,7 @@ class VotingFinals extends Command
 
         sleep(random_int(1, 10));
 
-        $baseUrl = "https://prezenta.roaep.ro/prezidentiale24112024/data/json/sicpv/pv/pv_aggregated.json?_=1732490497686?_={$ct}";
+        $baseUrl = "https://prezenta.roaep.ro/prezidentiale18052025/data/json/sicpv/pv/pv_aggregated.json?_={$ct}";
 
         $this->info("Fetching data from the AEP...");
 

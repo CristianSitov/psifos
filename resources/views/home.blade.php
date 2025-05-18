@@ -31,6 +31,7 @@
                             <div id="graph-controls" style="margin-bottom: 1em;"></div>
                             <div id="container-comparison-gross" style="min-height: 600px"></div>
                             <div id="container-comparison-share" style="min-height: 600px"></div>
+                            <div id="container-comparison-final" style="min-height: 600px"></div>
                         </div>
                     </div>
                 </div>
@@ -51,6 +52,7 @@
 
         let grossChart = null;
         let shareChart = null;
+        let finalsChart = null;
 
         // === URL Param Utilities ===
         function getUrlParams() {
@@ -146,6 +148,13 @@
                 .then(res => res.json())
                 .then(data => {
                     const categories = data.presence.map(i => i.day_hour_key);
+                    const candidates = data.finals.map(item => item.candidate);
+                    const finals2025 = data.finals.map(item => ({
+                        y: item.votes,
+                        d: item.difference,
+                        p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
+                    }));
+
                     const grossColors = [
                         'rgba(150, 0, 0, 0.8)',
                         'rgba(100, 0, 0, 0.8)',
@@ -257,6 +266,59 @@
                     if (xMin !== null && xMax !== null) {
                         syncZoom(xMin, xMax);
                     }
+
+                    finalsChart = Highcharts.chart('container-comparison-final', {
+                        chart: {
+                            type: 'bar'
+                        },
+                        title: {
+                            text: 'Finals 2025'
+                        },
+                        xAxis: {
+                            categories: candidates,
+                            title: {
+                                text: 'Candidates',
+                                style: {
+                                    fontSize: '20px'
+                                }
+                            },
+                            labels: {
+                                skew3d: true,
+                                style: {
+                                    fontSize: '10px',
+                                    textOverflow: 'ellipsis',
+                                    width: '100px',
+                                }
+                            }
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Distribution'
+                            }
+                        },
+                        plotOptions: {
+                            series: {
+                                dataLabels: {
+                                    enabled: true,
+                                    formatter: function () {
+                                        return `D: ${humanSize(this.point.d)} //  T: ${humanSize(this.point.y)} // P: ${this.point.p}%`; // Display percentage as data label
+                                    }
+                                },
+                                pointWidth: 30,
+                            },
+                        },
+                        series: [
+                            {
+                                name: 'Finals 2024',
+                                data: finals2025,
+                                colorByPoint: true,
+                                colors: [
+                                    "#F15854", // Muted Red
+                                    "#5DA5DA", // Soft Blue
+                                ],
+                            }
+                        ]
+                    });
                 })
                 .catch(err => console.error("Fetch error:", err));
         }
