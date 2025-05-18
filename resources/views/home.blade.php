@@ -153,7 +153,25 @@ function fetchData() {
                         data: presence2025_2,
                         color: 'rgba(0, 50, 255, 0.8)'
                     }
-                ]
+                ],
+                tooltip: {
+                    shared: true,
+                    useHTML: true,
+                    formatter: function () {
+                        return `<table>
+                                    ${this.points.map(point => `
+                                        <tr>
+                                            <td style="color:${point.color}; padding-right: 10px; white-space: nowrap; font-family: 'Courier New'" font-size: 0.75em>
+                                                <b>● ${point.series.name}</b>
+                                            </td>
+                                            <td style="text-align: right; min-width: 70px; white-space: nowrap; font-family: 'Courier New'; font-size: 0.75em">
+                                                <b>${humanSize(point.y)}</b>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </table>`;
+                    }
+                }
             });
 
             if (zoomState) {
@@ -199,30 +217,38 @@ function fetchData() {
                 series: [
                     {
                         name: 'Presence 2019 - 1',
-                        data: presence20191Share+'%',
+                        data: presence20191Share,
                         color: 'rgba(124, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2019 - 2',
-                        data: presence20192Share+'%',
+                        data: presence20192Share,
                         color: 'rgba(104, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2024 - 1',
-                        data: presence20241Share+'%',
+                        data: presence20241Share,
                         color: 'rgba(80, 80, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 1',
-                        data: presence20251Share+'%',
+                        data: presence20251Share,
                         color: 'rgba(50, 100, 255, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 2',
-                        data: presence20252Share+'%',
+                        data: presence20252Share,
                         color: 'rgba(0, 50, 255, 0.8)'
                     }
-                ]
+                ],
+                tooltip: {
+                    shared: true,
+                    formatter: function () {
+                        return this.points.map(point =>
+                            `<span style="color:${point.color}">●</span> ${point.series.name}: <b>${point.y.toFixed(2)}%</b><br/>`
+                        ).join('');
+                    }
+                }
             });
 
             // Highcharts.chart('container-comparison-final', {
@@ -286,11 +312,13 @@ function fetchData() {
 fetchData(); // Initial fetch
 setInterval(fetchData, 60000); // Fetch every 60000ms (1 minute)
 
-function humanSize(size) {
-    let base = 1000
-    let units = ['', 'K', 'M', 'G', 'T']
-    let i = Math.log(size) / Math.log(base) | 0
-    return `${(size / Math.pow(base, i)).toFixed(3) * 1} ${units[i]}`
+function humanSize(value) {
+    if (value == null || isNaN(value)) return '';
+
+    const millions = value / 1_000_000;
+
+    // Example: 1.234 M
+    return Highcharts.numberFormat(millions, 2, '.', '') + ' M';
 }
 
 </script>
