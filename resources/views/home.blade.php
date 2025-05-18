@@ -96,6 +96,19 @@ function fetchData() {
                         type: 'x'
                     },
                     events: {
+                        load: function () {
+                            const chart = this;
+                            const xAxis = chart.xAxis[0];
+
+                            const dataMin = xAxis.dataMin;
+                            const dataMax = xAxis.dataMax;
+                            const range = dataMax - dataMin;
+
+                            const start = dataMin + (3/4) * range;
+                            const end = dataMax;
+
+                            xAxis.setExtremes(start, end);
+                        },
                         selection: function (event) {
                             if (event.xAxis) {
                                 const xMin = event.xAxis[0].min;
