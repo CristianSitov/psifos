@@ -28,10 +28,10 @@
                         </div>
 
                         <div class="card-body">
+                            <div id="container-comparison-final" style="min-height: 600px"></div>
                             <div id="graph-controls" style="margin-bottom: 1em;"></div>
                             <div id="container-comparison-gross" style="min-height: 600px"></div>
                             <div id="container-comparison-share" style="min-height: 600px"></div>
-                            <div id="container-comparison-final" style="min-height: 600px"></div>
                         </div>
                     </div>
                 </div>
