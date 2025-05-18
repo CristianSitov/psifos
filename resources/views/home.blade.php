@@ -28,8 +28,6 @@
                         </div>
 
                         <div class="card-body">
-{{--                            <div id="container-comparison-count"></div>--}}
-{{--                            <div id="container-comparison-final" style="min-height: 600px"></div>--}}
                             <div id="container-comparison-gross" style="min-height: 600px"></div>
                             <div id="container-comparison-share" style="min-height: 600px"></div>
                         </div>
@@ -43,8 +41,32 @@
 // URL of the JSON file
 const jsonUrl = '{{ url('/') }}/status.json';
 
+const STORAGE_KEY = "highcharts-zoom";
+
+function saveZoomToStorage(xMin, xMax) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ xMin, xMax }));
+}
+
+function getZoomFromStorage() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    try {
+        const { xMin, xMax } = JSON.parse(raw);
+        if (!isNaN(xMin) && !isNaN(xMax)) {
+            return { xMin, xMax };
+        }
+    } catch (e) {}
+    return null;
+}
+
+function clearZoomFromStorage() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
 // Fetch the JSON data
 function fetchData() {
+    const zoomState = getZoomFromStorage();
+
     fetch(jsonUrl)
         .then(response => response.json())
         .then(data => {
@@ -66,15 +88,28 @@ function fetchData() {
             //     d: item.difference,
             //     p: ((item.votes / total) * 100).toFixed(2) // Calculate percentage and format to 2 decimals
             // }));
-            // const totalVotes = data.totals.total;
-            // const finalVotes = data.totals.final;
-            // const eraseVotes = 222_581;
 
-            Highcharts.chart('container-comparison-gross', {
+            const comparison_gross = Highcharts.chart('container-comparison-gross', {
                 chart: {
                 //     type: 'column'
                     zooming: {
                         type: 'x'
+                    },
+                    events: {
+                        selection: function (event) {
+                            if (event.xAxis) {
+                                const xMin = event.xAxis[0].min;
+                                const xMax = event.xAxis[0].max;
+                                saveZoomToStorage(xMin, xMax);
+                            } else {
+                                clearZoomFromStorage(); // reset
+                            }
+                        },
+                        redraw: function () {
+                            if (!this.resetZoomButton && getZoomFromStorage()) {
+                                this.showResetZoom();
+                            }
+                        }
                     }
                 },
                 title: {
@@ -87,7 +122,7 @@ function fetchData() {
                     }
                 },
                 yAxis: {
-                    // type: 'logarithmic',
+                    type: 'logarithmic',
                     title: {
                         text: 'Presence'
                     }
@@ -96,30 +131,52 @@ function fetchData() {
                     {
                         name: 'Presence 2019 - 1',
                         data: presence2019_1,
-                        color: 'rgba(124, 181, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(150, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2019 - 2',
                         data: presence2019_2,
-                        color: 'rgba(104, 151, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(100, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2024 - 1',
                         data: presence2024_1,
-                        color: 'rgba(80, 130, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(160, 160, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 1',
                         data: presence2025_1,
-                        color: 'rgba(50, 80, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(50, 100, 255, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 2',
                         data: presence2025_2,
-                        color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(0, 50, 255, 0.8)'
                     }
                 ]
             });
+
+            if (zoomState) {
+                const axis = comparison_gross.xAxis[0];
+                axis.setExtremes(zoomState.xMin, zoomState.xMax, true, false);
+
+                // Manually show Reset Zoom button
+                comparison_gross.showResetZoom();
+
+                // Optional: store the zoom flag so reset works properly
+                comparison_gross.resetZoomButton = comparison_gross.renderer.button(
+                    "Reset Zoom",
+                    comparison_gross.plotLeft + 10,
+                    comparison_gross.plotTop + 10,
+                    function () {
+                        axis.setExtremes(null, null);
+                        clearZoomFromStorage();
+                        this.destroy();
+                    }
+                ).attr({
+                    zIndex: 20
+                }).add();
+            }
 
             Highcharts.chart('container-comparison-share', {
                 // chart: {
@@ -143,27 +200,27 @@ function fetchData() {
                     {
                         name: 'Presence 2019 - 1',
                         data: presence20191Share,
-                        color: 'rgba(124, 181, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(124, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2019 - 2',
                         data: presence20192Share,
-                        color: 'rgba(104, 151, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(104, 0, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2024 - 1',
                         data: presence20241Share,
-                        color: 'rgba(80, 130, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(80, 80, 0, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 1',
                         data: presence20251Share,
-                        color: 'rgba(50, 80, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(50, 100, 255, 0.8)'
                     },
                     {
                         name: 'Presence 2025 - 2',
                         data: presence20252Share,
-                        color: 'rgba(30, 50, 236, 0.8)' // Optional: custom color
+                        color: 'rgba(0, 50, 255, 0.8)'
                     }
                 ]
             });
@@ -214,76 +271,13 @@ function fetchData() {
             //             data: finals2025,
             //             colorByPoint: true,
             //             colors: [
-            //                 "#4D4D4D", // Dark Gray
             //                 "#F15854", // Muted Red
             //                 "#5DA5DA", // Soft Blue
-            //                 "#FAA43A", // Warm Orange
-            //                 "#DECF3F", // Mustard Yellow
-            //                 "#F17CB0", // Muted Pink
-            //                 "#60BD68", // Soft Green
-            //                 "#B2912F", // Brownish Gold
-            //                 "#B276B2", // Light Purple
-            //                 "#CCCCCC", // Light Gray
-            //                 "#8C8C8C", // Medium Gray
-            //                 "#6A3D9A", // Deep Purple
-            //                 "#FFBF44", // Light Orange
-            //                 "#2A9D8F"  // Teal
             //             ],
             //         }
             //     ]
             // });
 
-            Highcharts.chart('container-comparison-count', {
-                chart: {
-                    type: 'bar'
-                },
-                title: {
-                    text: 'Votes Count Progress'
-                },
-                xAxis: {
-                    categories: ['Votes'], // Single category for the single bar
-                    title: {
-                        text: null
-                    }
-                },
-                yAxis: {
-                    min: 0,
-                    max: totalVotes,
-                    title: {
-                        text: 'Number of Votes'
-                    }
-                },
-                tooltip: {
-                    formatter: function () {
-                        return `<b>${this.series.name}</b>: ${this.y}<br>
-                            Percentage: ${(this.y / totalVotes * 100).toFixed(2)}%`;
-                    }
-                },
-                plotOptions: {
-                    series: {
-                        stacking: 'normal', // Stacked bar to show progress
-                        dataLabels: {
-                            enabled: true,
-                            formatter: function () {
-                                return `${((this.y / totalVotes) * 100).toFixed(2)}%`; // Show percentage
-                            }
-                        }
-                    }
-                },
-                series: [{
-                    name: 'Counted Votes',
-                    data: [finalVotes],
-                    color: '#7cb5ec' // Custom color for counted votes
-                }, {
-                    name: 'Canceled Votes',
-                    data: [eraseVotes],
-                    color: '#ac1155' // Custom color for remaining votes
-                }, {
-                    name: 'Remaining Votes',
-                    data: [totalVotes - finalVotes - eraseVotes],
-                    color: '#90ed7d' // Custom color for remaining votes
-                }]
-            });
         })
         .catch(error => console.error('Error fetching the JSON data:', error));
 }

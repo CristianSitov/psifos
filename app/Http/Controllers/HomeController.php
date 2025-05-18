@@ -111,19 +111,19 @@ class HomeController extends Controller
 //                return $item;
 //            });
 
-//        $totalSum = VotingResult::query()
-//            ->where('year', '=', 2025)
-//            ->where('key', '=', 'now')
-//            ->sum('LT');
-//        $finalSum = VotingFinal::sum('votes');
+        $totalSum = VotingResult::query()
+            ->where('year', '=', 'prezidentiale18052025')
+            ->where('key', '=', 'now')
+            ->sum('LT');
+        $finalSum = VotingFinal::sum('votes');
 
         return response()->json([
             'presence' => $processedResults,
 //            'finals' => $finals,
-//            'totals' => [
-//                'total' => (int) $totalSum,
-//                'final' => (int) $finalSum,
-//            ],
+            'totals' => [
+                'total' => (int) $totalSum,
+                'final' => (int) $finalSum,
+            ],
         ]);
     }
 }
